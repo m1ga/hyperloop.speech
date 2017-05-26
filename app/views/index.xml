@@ -1,0 +1,7 @@
+<Alloy>
+	<Window class="container" layout="vertical">
+		<Button id="btn0" title="Say"/>
+		<TextField id="tf" value="Hyperloop is awesome"/>
+		<Button id="btn1" title="Record"/>
+	</Window>
+</Alloy>
