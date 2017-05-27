@@ -1,44 +1,59 @@
-var Speech = require("net.gotev.speech.Speech");
-var SpeechDelegate = require("net.gotev.speech.SpeechDelegate");
-var SpeechProgressView = require("net.gotev.speech.ui.SpeechProgressView");
-var LinearLayout = require("android.widget.LinearLayout");
-var Activity = require('android.app.Activity');
-var activity = new Activity(Ti.Android.currentActivity);
-var speechView = new SpeechProgressView(Ti.Android.currentActivity);
-var layout = new LinearLayout(Ti.Android.currentActivity);
+var TiSpeech = require("ti.speech");
+TiSpeech.initialize("en_US"); // locale is optional on iOS ti.speech
 
-var speechDelegate = new SpeechDelegate({
-	onStartOfSpeech: function() {
-		console.log("Start");
-	},
-	onSpeechRmsChanged: function(value) {
-		console.log("rms: " + value)
-	},
-	onSpeechPartialResults: function(results) {
-
-	},
-	onSpeechResult: function(result) {
-		console.log("result: " + result);
-		//speechView.stop();
-		$.tf.value = result;
-	}
+var win = Ti.UI.createWindow({
+	backgroundColor: "#fff",
+	layout: "vertical"
 });
 
-Speech.init(Ti.Android.currentActivity);
-//speechView.stop();
-// Speech.getInstance().setStopListeningAfterInactivity(1000);
-
-$.btn0.addEventListener("click", function(e) {
-	Speech.getInstance().say($.tf.value);
-})
-
-$.btn1.addEventListener("click", function(e) {
-	Speech.getInstance().startListening(speechView, speechDelegate);
-	//speechView.play();
-})
-layout.addView(speechView);
-$.index.add(layout);
-$.index.addEventListener("close",function(e){
-	Speech.getInstance().unregisterDelegate();
+var btn = Ti.UI.createButton({
+	title: "Recognize real-time speech"
 });
-$.index.open();
+
+var lbl = Ti.UI.createLabel({
+	text: "press the button",
+	color: "#000"
+});
+
+if (!TiSpeech.isAvailable()) {
+	alert("Speech recognition is not available on this device!");
+	btn.setEnabled(false);
+}
+
+btn.addEventListener("click", function() {
+	lbl.text = "Start talking...";
+
+	TiSpeech.startRecognition({
+		type: TiSpeech.SOURCE_TYPE_MICROPHONE, // iOS ti.speech
+		progress: function(e) {
+			Ti.API.info(e.value);
+		},
+		success: function(e) {
+			Ti.API.info(e.result);
+			lbl.text = e.result;
+		}
+	});
+});
+
+if (OS_ANDROID) {
+	//win.add(TiSpeech.getView());
+	var tf_talk = Ti.UI.createTextField({
+		value: "Hyperloop is awesome",
+		color: "#000"
+	});
+	var btn_talk = Ti.UI.createButton({
+		title: "Text-to-speech"
+	});
+	win.add(tf_talk);
+	win.add(btn_talk);
+	btn_talk.addEventListener("click", function(e) {
+		TiSpeech.say(tf_talk.value);
+	});
+}
+
+win.addEventListener("close", function() {
+
+});
+win.add(btn);
+win.add(lbl);
+win.open();
