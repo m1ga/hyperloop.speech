@@ -1,5 +1,6 @@
 var Speech = require("net.gotev.speech.Speech");
 var SpeechDelegate = require("net.gotev.speech.SpeechDelegate");
+var TextToSpeechCallback = require("net.gotev.speech.TextToSpeechCallback");
 var SpeechProgressView = require("net.gotev.speech.ui.SpeechProgressView");
 var LinearLayout = require("android.widget.LinearLayout");
 var LayoutParams = require("android.widget.LinearLayout.LayoutParams");
@@ -52,7 +53,11 @@ exports.startRecognition = function(opt) {
 	Speech.getInstance().startListening(speechView, speechDelegate);
 }
 exports.say = function(txt) {
-	Speech.getInstance().say(txt);
+	Speech.getInstance().say(txt, new TextToSpeechCallback({
+		onCompleted:function(){
+			console.log("complete")
+		}
+	}));
 }
 exports.getView = function() {
 	return layout;
